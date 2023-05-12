@@ -1,0 +1,17 @@
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\course_work1.exe
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\course_work1.deps.json
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\course_work1.runtimeconfig.json
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\course_work1.dll
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\course_work1.pdb
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.csproj.AssemblyReference.cache
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.AssemblyInfoInputs.cache
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.AssemblyInfo.cs
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.csproj.CoreCompileInputs.cache
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.dll
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\refint\course_work1.dll
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.pdb
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.genruntimeconfig.cache
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\ref\course_work1.dll
+C:\Users\korol\RiderProjects\course_work1\course_work1\bin\Debug\net6.0\MPI.dll
+C:\Users\korol\RiderProjects\course_work1\course_work1\obj\Debug\net6.0\course_work1.csproj.CopyComplete
