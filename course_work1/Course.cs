@@ -5,118 +5,121 @@ namespace course_work1;
 
 public class Course
 {
+    private static String prepared_data_path = "C:\\Users\\korol\\RiderProjects\\course_work1\\prepared_data\\";
+    private static String results_data_path = "C:\\Users\\korol\\RiderProjects\\course_work1\\test_results\\";
+    static void prepareData()
+    {
+        int[][] data_for_test2 = new int[][]
+        {
+            new int[] { 4, 4 },
+            new int[] { 4, 8 },
+            new int[] { 6, 4 },
+            new int[] { 6, 8 },
+            new int[] { 7, 4 },
+            new int[] { 7, 8 },
+        };
+        foreach (var data in data_for_test2)
+        {
+            int levels = data[0];
+            int childrenPerNode = data[1];
+            var adjacencyList = GenerateAdjacencyList(levels, childrenPerNode);
+            var filePath = prepared_data_path + levels + "-" + childrenPerNode + ".txt";
+            FileWorker.WriteAdjacencyListToFile(filePath,adjacencyList);
+            Console.WriteLine("Дерево з рiвнями: "+levels+", та дiтьми: " +childrenPerNode+", має узлiв: " +adjacencyList.Length);
+        }
+    }
 
     static void notParalel()
     {
-          int[][] data_for_test2 = new int[][]
+        int[][] data_for_test2 = new int[][]
         {
-            // new int[] { 4, 4 },
-            // new int[] { 4, 8 },
-            // new int[] { 6, 4 },
-            // new int[] { 6, 8 },
+            new int[] { 4, 4 },
+            new int[] { 4, 8 },
+            new int[] { 6, 4 },
+            new int[] { 6, 8 },
             new int[] { 7, 4 },
             new int[] { 7, 8 },
-          //  new int[] { 10, 4 },
-      
         };
           foreach (var data in data_for_test2)
           {
               int levels = data[0];
               int childrenPerNode = data[1];
-              var adjacencyList = GenerateAdjacencyList(levels,childrenPerNode);
-              
-            Console.WriteLine("\nDepth-First Search order:");
-            Console.WriteLine("Levels: " + levels + " Childrens: " + childrenPerNode);
-            int nodeCount = adjacencyList.Length;
-            Console.WriteLine($"\nTotal nodes in the tree: {nodeCount}");
-              // Створення об'єкта Stopwatch для вимірювання часу
+              var filePath = prepared_data_path + levels + "-" + childrenPerNode + ".txt";
+              var adjacencyList = FileWorker.ReadAdjacencyListFromFile(filePath);
+              Console.WriteLine("\nDepth-First Search order:");
+              Console.WriteLine("Дерево з рiвнями: "+levels+", та дiтьми: " +childrenPerNode);
+              Console.WriteLine(adjacencyList.Length);
+             // Створення об'єкта Stopwatch для вимірювання часу
               Stopwatch stopwatch = new Stopwatch();
-              // Запуск таймера
               stopwatch.Start();
               // Вивід результатів DFS та затраченого часу
               List<int> visitedNodes = DepthFirstSearchIterative(adjacencyList);
-          
               // Зупинка таймера
               stopwatch.Stop();
-              //    Console.WriteLine(string.Join(" -> ", visitedNodes));
-              Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds / 1000.0 + " с");
-              Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds + " мс");
-              // Dictionary<int, List<int>> adjacencyList = ConvertTreeToAdjacencyList(tree.Root);
-              // PrintAdjacencyList(adjacencyList);
-          
+              Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds+ " мс");
+              Console.WriteLine("Nodes visited: "+ visitedNodes.Count);
+              //Save results to file.
+              String typeOfalgo = "consistent";
+              var filePathResult = results_data_path + typeOfalgo+  "-"+ levels + "-" + childrenPerNode + ".txt";
+              FileWorker.WriteResultOfTest(filePathResult, stopwatch.ElapsedMilliseconds+ "мс", visitedNodes);
+
           }
-          Console.WriteLine("Finish of the program");
     }
     static void Main(string[] args)
     {
-         notParalel();
-        return;
         using (new MPI.Environment(ref args))
         {
             int size = Communicator.world.Size;
             int rank = Communicator.world.Rank;
-
-            int[][] adjacencyList = null;
+            int levels = 0;
+            int childrenPerNode = 0;
+            int[][] adjacencyList;
             int[] subtreeRoots = null;
             List<int> localVisitedNodes = null;
             Stopwatch stopwatch = null;
-
             
             if (rank == 0)
             {
+                levels = 7;
+                childrenPerNode = size;
+                var filePath = prepared_data_path + levels + "-" + childrenPerNode + ".txt";
+                adjacencyList = FileWorker.ReadAdjacencyListFromFile(filePath);
                 // Запуск таймера
                 stopwatch = new Stopwatch();
                 stopwatch.Start();
-                int levels = 7;
-                int childrenPerNode = size;
-                adjacencyList = GenerateAdjacencyList(levels, childrenPerNode);
-                Console.WriteLine("Nodes total: " + adjacencyList.Length);
-
                 subtreeRoots = DivideTree(adjacencyList, size);
-
                 for (int i = 1; i < size; i++)
                 {
                     Communicator.world.Send<int[][]>(adjacencyList, i, i);
                 }
-
-                Console.WriteLine("Sended");
-                localVisitedNodes = new List<int>(subtreeRoots);
-                localVisitedNodes.Add(0); // 0 - index of Tree Root.
             }
             else
             {
                 adjacencyList = Communicator.world.Receive<int[][]>(0, rank); // Whole tree receive.
             }
-
-            // Communicator.world.Broadcast(ref childrenPerNode, 0); // childrens in tree
+            
             var subtree_id = Communicator.world.Scatter(subtreeRoots, 0); // Node id to process.
-            Console.WriteLine("task for tr: " + rank + ", node id to proceed: " + subtree_id);
+            localVisitedNodes = DepthFirstSearchIterative(adjacencyList, subtree_id);
 
-            if (localVisitedNodes == null)
-            {
-                localVisitedNodes = DepthFirstSearchIterative(adjacencyList, subtree_id);
-            }
-            else
-            {
-                localVisitedNodes.AddRange(DepthFirstSearchIterative(adjacencyList, subtree_id));
-            }
-
-            Console.WriteLine("Algo is completed");
-
-            var results = Communicator.world.Allgather(localVisitedNodes.ToArray());
+            var results = Communicator.world.Gather(localVisitedNodes.ToArray(), 0);
             if (rank == 0)
             {
-                var fullpath = new List<int>();
+                var visitedNodesGlobal = new List<int>();
+                visitedNodesGlobal.Add(0);
                 foreach (var result in results)
                 {
-                    fullpath.AddRange(result);
+                    visitedNodesGlobal.AddRange(result);
                 }
-
-                //      Console.WriteLine(string.Join(" -> ", fullpath));
                 // Зупинка таймера
                 stopwatch.Stop();
-                Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds / 1000.0 + " с");
-                Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds + " мс");
+                Console.WriteLine("\nDepth-First Search order:");
+                Console.WriteLine("Дерево з рiвнями: "+levels+", та дiтьми: " +childrenPerNode);
+                Console.WriteLine("Час виконання: " + stopwatch.ElapsedMilliseconds+ " мс");
+                Console.WriteLine("Nodes visited: "+ visitedNodesGlobal.Count);
+                //Save results to file.
+                String typeOfalgo = "paralel";
+                var filePathResult = results_data_path + typeOfalgo+  "-"+ levels + "-" + childrenPerNode + ".txt";
+                FileWorker.WriteResultOfTest(filePathResult, stopwatch.ElapsedMilliseconds+ "мс", visitedNodesGlobal);
             }
         }
     }
@@ -186,12 +189,6 @@ public class Course
 
     static List<int> DepthFirstSearchIterative(int[][] adjacencyList, int  startNodeIndex= 0)
     {
-        if (adjacencyList == null || startNodeIndex >= adjacencyList.Length ||
-            adjacencyList[startNodeIndex] == null)
-        {
-            return null;
-        }
-
         Stack<int> stack = new Stack<int>();
         List<int> visitedNodes = new List<int>();
         stack.Push(startNodeIndex);
@@ -202,10 +199,9 @@ public class Course
 
             if (!visitedNodes.Contains(currentNodeIndex))
             {
-                // Console.WriteLine($"Посещенный узел: {currentNodeIndex}");
                 visitedNodes.Add(currentNodeIndex);
 
-                if (currentNodeIndex < adjacencyList.Length && adjacencyList[currentNodeIndex] != null)
+                if (currentNodeIndex < adjacencyList.Length)
                 {
                     for (int i = adjacencyList[currentNodeIndex].Length - 1; i >= 0; i--)
                     {
@@ -221,16 +217,15 @@ public class Course
     static int[] DivideTree(int[][] adjacencyList, int numSubtrees)
     {
         List<int> subtreeRoots = new List<int>();
-
         Queue<int> queue = new Queue<int>();
-        int rootNode = Array.FindIndex(adjacencyList, arr => arr != null);
+        int rootNode = 0;
         queue.Enqueue(rootNode);
 
         while (subtreeRoots.Count < numSubtrees && queue.Count > 0)
         {
             int currentNode = queue.Dequeue();
 
-            if (adjacencyList[currentNode] != null && adjacencyList[currentNode].Length > 0)
+            if (adjacencyList[currentNode].Length > 0)
             {
                 foreach (int child in adjacencyList[currentNode])
                 {
