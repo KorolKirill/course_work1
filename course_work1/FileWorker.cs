@@ -2,18 +2,17 @@
 
 public class FileWorker
 {
-    
     public static void WriteResultOfTest(string filename, String time, List<int> visitedNodes)
     {
-        // Проверяем, существует ли файл
+        // Перевіряємо, чи існує файл
         if (!File.Exists(filename))
         {
-            // Создаем файл, если он не существует
+            // Створюємо файл, якщо він не існує
             var fileStream = File.Create(filename);
             fileStream.Close();
         }
     
-        // Записываем список в файл
+        // Записуємо список у файл
         using (StreamWriter writer = new StreamWriter(filename))
         {
             writer.WriteLine("Algoritm time: " + time);
@@ -24,15 +23,15 @@ public class FileWorker
     }
     public static void WriteAdjacencyListToFile(string filename, int[][] adjacencyList)
     {
-        // Проверяем, существует ли файл
+        // Перевіряємо, чи існує файл
         if (!File.Exists(filename))
         {
-            // Создаем файл, если он не существует
+            // Створюємо файл, якщо він не існує
             var fileStream = File.Create(filename);
             fileStream.Close();
         }
     
-        // Записываем список в файл
+        // Записуємо список у файл
         using (StreamWriter writer = new StreamWriter(filename))
         {
             foreach (var row in adjacencyList)
@@ -45,7 +44,6 @@ public class FileWorker
         }
     }
 
-
     public static int[][] ReadAdjacencyListFromFile(string filename)
     {
         using (StreamReader reader = new StreamReader(filename))
@@ -56,17 +54,17 @@ public class FileWorker
                 .Select(line => line.Split(' ').Select(int.Parse).ToArray())
                 .ToArray();
 
-            // Находим максимальный индекс узла
+            // Знаходимо максимальний індекс вузла
             int maxIndex = lines.SelectMany(line => line).Max();
 
-            // Создаем массив для всех узлов от 0 до максимального индекса
+            // Створюємо масив для всіх вузлів від 0 до максимального індексу
             int[][] fullAdjacencyList = new int[maxIndex + 1][];
             for (int i = 0; i <= maxIndex; i++)
             {
                 fullAdjacencyList[i] = new int[0];
             }
 
-            // Заполняем список смежности
+            // Заповнюємо список суміжності
             for (int i = 0; i < lines.Length; i++)
             {
                 fullAdjacencyList[i] = lines[i];
@@ -75,5 +73,4 @@ public class FileWorker
             return fullAdjacencyList;
         }
     }
-
 }
